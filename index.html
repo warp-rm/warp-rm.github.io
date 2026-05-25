@@ -625,90 +625,46 @@
     <section id="method">
       <h1>Method</h1>
       <p>
-        Long-horizon teleoperated demonstrations contain a mix of decisive, productive motion
-        and unproductive segments such as hesitations, failed grasps, and recoveries. Existing
-        progress models supervise on <i>absolute</i> normalized time, which is noisy because
-        identical normalized timesteps can correspond to very different task states across
-        demonstrations.
-      </p>
-      <p>
-        WARP-RM is trained instead to predict <b>relative</b> progress: how fast, and in which
-        direction, the task is advancing. This signal is generated for free by replaying
-        successful demonstrations at non-uniform velocities (slower, faster, and in reverse)
-        and asking a model to recover the playback speed from images alone.
+        Prior progress models supervise on <i>absolute</i> normalized time, which is noisy:
+        identical timesteps across demos can correspond to very different task states. WARP-RM
+        instead learns a <b>relative</b> signal &mdash; how fast, and in which direction, the
+        task is advancing &mdash; with supervision generated for free by replaying successful
+        demonstrations at non-uniform velocities.
       </p>
 
-      <h2>Time-warp sampler</h2>
       <div class="method-fig">
-        <div class="method-fig-title">Figure 1 &middot; Time-warp playback schedule</div>
+        <div class="method-fig-title">1 &middot; Time-warp playback &rarr; free progress labels</div>
         <p>
-          The sampler resamples a successful trajectory using a warped playback schedule. Playback
-          speeds are drawn from a stationary AR(1) process in log-space &mdash; producing smooth,
-          temporally correlated speed variations from slow-motion to fast-forward &mdash; and the
-          direction is randomly inverted at a Poisson-sampled set of reversal points. Each sampled
-          window of N=32 frames is paired with a per-frame progress label equal to the signed
-          source-frame displacement from the window's first frame.
-        </p>
-        <p>
-          Key parameters:
-          <span class="pill">N = 32 frames</span>
-          <span class="pill">&alpha; = 0.5</span>
-          <span class="pill">&sigma;<sub>&infin;</sub> = ln&nbsp;2</span>
-          <span class="pill">&lambda;<sub>rev</sub> = 1</span>
-        </p>
-        <div class="method-fig-caption">
-          Operating in log-space makes a 2&times; speedup and a 0.5&times; slowdown equally likely.
-          The Poisson-sampled reversals expose the model to negative progress (regression).
-        </div>
-      </div>
-
-      <h2>WARP-RM architecture</h2>
-      <div class="method-fig">
-        <div class="method-fig-title">Figure 2 &middot; WARP-RM model</div>
-        <p>
-          A frozen <b>DINOv3 ViT-B/16</b> encoder produces a 768-d feature for each frame.
-          Each token is formed by concatenating the frame embedding with its temporal difference,
-          projected to 768-d, and passed through a 12-layer bidirectional transformer encoder.
-          The model emits, at each input frame, a softmax distribution over 30 cumulative-progress bins.
-          Following <i>Stop Regressing</i> (Farebrother et al., 2024), this categorical formulation
-          improves stability over direct scalar regression.
-        </p>
-        <p>
-          The per-frame velocity used by WARP-BC is the discrete temporal derivative of the predicted
-          cumulative progress:
-          <code style="background: #f0eee9; padding: 0.15rem 0.4rem; border-radius: 4px;">
-            v&#770;<sub>t</sub> = (N&minus;1)&middot;(y&#770;<sub>t</sub> &minus; y&#770;<sub>t&minus;1</sub>)
-          </code>.
-        </p>
-        <p style="margin: 0;">
-          <span style="color: var(--muted);">
-            v&#770;&nbsp;&asymp;&nbsp;1 &rarr; expert pace &middot;
-            v&#770;&nbsp;&asymp;&nbsp;0 &rarr; stalled progress &middot;
-            v&#770;&nbsp;&lt;&nbsp;0 &rarr; regressing progress
-          </span>
+          Resample a successful trajectory with smoothly varying playback speeds (AR(1) in log-space)
+          and Poisson-sampled reversals. The signed source-frame displacement from the window's
+          first frame is the per-frame progress label &mdash; no human annotation required.
         </p>
       </div>
 
-      <h2>WARP-BC: action-chunk reweighting</h2>
       <div class="method-fig">
+        <div class="method-fig-title">2 &middot; Predict per-frame velocity from images</div>
         <p>
-          For each training chunk of horizon <i>H</i>=30 frames (1.0&nbsp;s), let
-          v&#770;<sub>end</sub> be the predicted velocity at the chunk's terminal frame. The
-          reward-aligned BC weight is:
+          A frozen <b>DINOv3 ViT-B/16</b> + 12-layer bidirectional transformer head outputs a
+          per-frame categorical distribution over cumulative progress. Its temporal derivative
+          gives the velocity v&#770;<sub>t</sub>:
         </p>
-        <p style="text-align: center; font-size: 1.1rem;">
+        <p style="margin: 0; color: var(--muted); text-align: center;">
+          v&#770;&nbsp;&asymp;&nbsp;1 &rarr; expert pace &middot;
+          v&#770;&nbsp;&asymp;&nbsp;0 &rarr; stalled &middot;
+          v&#770;&nbsp;&lt;&nbsp;0 &rarr; regressing
+        </p>
+      </div>
+
+      <div class="method-fig">
+        <div class="method-fig-title">3 &middot; WARP-BC: reweight action chunks by terminal velocity</div>
+        <p>
+          For each training chunk, gate on the predicted velocity at its terminal frame.
+          With &tau;&nbsp;=&nbsp;1.0, only chunks ending in faster-than-expert progress are
+          kept, and each is weighted continuously by its velocity:
+        </p>
+        <p style="text-align: center; font-size: 1.1rem; margin: 0;">
           <code style="background: #f0eee9; padding: 0.35rem 0.7rem; border-radius: 4px;">
             w = v&#770;<sub>end</sub> &middot; <b>1</b>{ v&#770;<sub>end</sub> &gt; &tau; }
-          </code>
-        </p>
-        <p>
-          With &tau;&nbsp;=&nbsp;1.0, only chunks ending in faster-than-expert forward progress
-          are kept, and they are weighted continuously by their velocity. The final loss is the
-          standard flow-matching BC loss weighted per-sample by <i>w</i>:
-        </p>
-        <p style="text-align: center; font-size: 1.05rem;">
-          <code style="background: #f0eee9; padding: 0.35rem 0.7rem; border-radius: 4px;">
-            L<sub>BC</sub> = E<sub>(s,a)&sim;D</sub> [ w(s,a) &middot; L<sub>flow</sub>(&pi;<sub>&theta;</sub>; s, a) ]
           </code>
         </p>
       </div>
