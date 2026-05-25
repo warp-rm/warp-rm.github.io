@@ -6,6 +6,14 @@
   <title>WARP-RM: Warp-Augmented Relative Progress Reward Modeling</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- MathJax for inline math (v̂_t, equations, etc.) -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+      svg: { fontCache: 'global' },
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
   <style>
     :root {
       --accent: #7c3aed;
@@ -299,6 +307,7 @@
       line-height: 1.5;
     }
 
+
     /* Inspector (video + synced WARP-RM curve) */
     .inspector-tabs {
       display: flex;
@@ -485,7 +494,8 @@
       <li><a href="#method">Method</a></li>
       <li><a href="#tables">Quantitative Results</a></li>
       <li><a href="#ablations">Ablations</a></li>
-      <li><a href="#interactive">Interactive Demos</a></li>
+      <!-- <li><a href="#interactive">Interactive Demos</a></li> -->
+
     </ul>
   </nav>
 
@@ -509,7 +519,7 @@
       <p style="color: var(--muted); max-width: 900px;">
         Each video plays
         a real teleoperated episode while the curve below shows the dense per-frame predicted
-        velocity v&#770;<sub>t</sub> &mdash; positive (blue) for forward task progress, negative (red)
+        velocity \(\hat{v}_{t}\) &mdash; positive (blue) for forward task progress, negative (red)
         for regression. The scrubber line tracks the video. <b>Click anywhere on the curve to seek the video.</b>
       </p>
 
@@ -525,7 +535,7 @@
                  src="media/inspector/ep6974.mp4#t=30"></video>
           <div class="inspector-readout">
             <div>t = <span id="inspector-t">0.0</span>&thinsp;s &nbsp;/&nbsp; <span id="inspector-dur">&mdash;</span>&thinsp;s</div>
-            <div>v&#770;<sub>t</sub> &nbsp; <span id="inspector-v-badge" class="badge zero">+0.00</span></div>
+            <div>\(\hat{v}_{t}\) &nbsp; <span id="inspector-v-badge" class="badge zero">+0.00</span></div>
             <div id="inspector-state" style="color: var(--muted); font-size: 0.88rem; margin-top: 0.25rem;">paused</div>
             <button class="play-btn" id="inspector-play">▶ Play</button>
           </div>
@@ -646,12 +656,12 @@
         <p>
           A frozen <b>DINOv3 ViT-B/16</b> + 12-layer bidirectional transformer head outputs a
           per-frame categorical distribution over cumulative progress. Its temporal derivative
-          gives the velocity v&#770;<sub>t</sub>:
+          gives the velocity \(\hat{v}_{t}\):
         </p>
         <p style="margin: 0; color: var(--muted); text-align: center;">
-          v&#770;&nbsp;&asymp;&nbsp;1 &rarr; expert pace &middot;
-          v&#770;&nbsp;&asymp;&nbsp;0 &rarr; stalled &middot;
-          v&#770;&nbsp;&lt;&nbsp;0 &rarr; regressing
+          \(\hat{v}\)&nbsp;&asymp;&nbsp;1 &rarr; expert pace &middot;
+          \(\hat{v}\)&nbsp;&asymp;&nbsp;0 &rarr; stalled &middot;
+          \(\hat{v}\)&nbsp;&lt;&nbsp;0 &rarr; regressing
         </p>
       </div>
 
@@ -664,7 +674,7 @@
         </p>
         <p style="text-align: center; font-size: 1.1rem; margin: 0;">
           <code style="background: #f0eee9; padding: 0.35rem 0.7rem; border-radius: 4px;">
-            w = v&#770;<sub>end</sub> &middot; <b>1</b>{ v&#770;<sub>end</sub> &gt; &tau; }
+            w = \(\hat{v}_{end}\) &middot; <b>1</b>{ \(\hat{v}_{end}\) &gt; &tau; }
           </code>
         </p>
       </div>
@@ -828,7 +838,7 @@
               <td>14/20</td><td>124.2</td><td>34.3%</td>
             </tr>
             <tr class="highlight">
-              <td class="method">Terminal v&#770;<sub>end</sub> &mdash; <b>WARP</b></td>
+              <td class="method">Terminal \(\hat{v}_{end}\) &mdash; <b>WARP</b></td>
               <td class="best">19/20</td><td class="best">118.8</td><td>34.4%</td>
             </tr>
             <tr><td colspan="4" style="background:#f7f5ef; text-align:left; font-weight:700; padding-left:1rem;">WARP sampler</td></tr>
@@ -845,6 +855,7 @@
       </div>
     </section>
 
+    <!-- Interactive 3D Demos section temporarily disabled — may be restored later.
     <section id="interactive">
       <h1>Interactive 3D Demos</h1>
       <p style="color: var(--muted);">
@@ -856,6 +867,7 @@
         <p style="margin-top: 0.75rem;">Interactive viser embeds coming soon.</p>
       </div>
     </section>
+    -->
   </main>
 
   <script>
@@ -1039,13 +1051,34 @@
           svg.appendChild(lbl);
         }
 
-        // y-axis label
-        const ylab = document.createElementNS(ns, 'text');
-        ylab.setAttribute('x', 8); ylab.setAttribute('y', PAD.t + (plotHeight - PAD.t - PAD.b) / 2);
-        ylab.setAttribute('font-size', '14'); ylab.setAttribute('font-style', 'italic');
-        ylab.setAttribute('fill', '#222'); ylab.setAttribute('font-family', 'serif');
-        ylab.textContent = 'v̂ₜ';
-        svg.appendChild(ylab);
+        // y-axis label v̂_t — composed from explicit glyphs so the hat sits
+        // centered on the v in every browser, instead of relying on combining
+        // diacritics or the "v̂ₜ" unicode (which is often poorly aligned).
+        const ylabY = PAD.t + (plotHeight - PAD.t - PAD.b) / 2;
+        const ylabX = 14;
+        const ylabG = document.createElementNS(ns, 'g');
+        const ylabV = document.createElementNS(ns, 'text');
+        ylabV.setAttribute('x', ylabX); ylabV.setAttribute('y', ylabY);
+        ylabV.setAttribute('font-size', '15'); ylabV.setAttribute('font-style', 'italic');
+        ylabV.setAttribute('fill', '#222'); ylabV.setAttribute('font-family', 'serif');
+        ylabV.setAttribute('text-anchor', 'middle');
+        ylabV.textContent = 'v';
+        ylabG.appendChild(ylabV);
+        const ylabHat = document.createElementNS(ns, 'text');
+        ylabHat.setAttribute('x', ylabX); ylabHat.setAttribute('y', ylabY - 11);
+        ylabHat.setAttribute('font-size', '13');
+        ylabHat.setAttribute('fill', '#222'); ylabHat.setAttribute('font-family', 'serif');
+        ylabHat.setAttribute('text-anchor', 'middle');
+        ylabHat.textContent = 'ˆ'; /* MODIFIER LETTER CIRCUMFLEX, non-combining */
+        ylabG.appendChild(ylabHat);
+        const ylabSub = document.createElementNS(ns, 'text');
+        ylabSub.setAttribute('x', ylabX + 6); ylabSub.setAttribute('y', ylabY + 4);
+        ylabSub.setAttribute('font-size', '10'); ylabSub.setAttribute('font-style', 'italic');
+        ylabSub.setAttribute('fill', '#222'); ylabSub.setAttribute('font-family', 'serif');
+        ylabSub.setAttribute('text-anchor', 'start');
+        ylabSub.textContent = 't';
+        ylabG.appendChild(ylabSub);
+        svg.appendChild(ylabG);
 
         // x-axis label
         const xlab = document.createElementNS(ns, 'text');
