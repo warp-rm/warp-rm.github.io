@@ -27,6 +27,11 @@
       --title-font: 'Inter', system-ui, sans-serif;
       --body-font: 'Inter', system-ui, sans-serif;
       --sidebar-width: max(20vw, 180px);
+      /* tinted neutrals (no pure #000/#fff) + signature expo-out easing */
+      --surface: #fdfcfa;
+      --ink: #17181c;
+      --hairline: #e4e1da;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     * { box-sizing: border-box; }
@@ -59,7 +64,7 @@
       text-decoration: none;
       color: var(--sidebar-text);
       font-weight: 500;
-      transition: color 0.25s, font-weight 0.25s, text-shadow 0.25s;
+      transition: color 0.25s var(--ease-out), font-weight 0.25s var(--ease-out), text-shadow 0.25s var(--ease-out);
     }
     .sidebar a.active, .sidebar a:hover {
       color: var(--sidebar-active);
@@ -98,11 +103,7 @@
       color: #111;
     }
     .main-title .gradient {
-      background: linear-gradient(90deg, #06b6d4 0%, #7c3aed 50%, #ec4899 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      color: transparent;
+      color: var(--accent);
       font-weight: 900;
     }
     .subtitle {
@@ -144,7 +145,7 @@
       text-decoration: none;
       font-weight: 600;
       font-size: 0.95rem;
-      transition: transform 0.15s, background 0.2s;
+      transition: transform 0.15s var(--ease-out), background 0.2s var(--ease-out);
     }
     .links-row a:hover { background: var(--accent); transform: translateY(-1px); }
     .links-row a.disabled {
@@ -154,10 +155,10 @@
     img {
       max-width: 100%;
       border-radius: 4px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      border: 1px solid var(--hairline);
     }
 
-    video, iframe { box-shadow: 0 0 8px rgba(0,0,0,0.1); }
+    /* videos/iframes carry hairline borders in context — flat at rest */
 
     .hero-video-wrap {
       display: flex;
@@ -192,12 +193,12 @@
       padding: 0.55rem 1.1rem;
       border-radius: 999px;
       border: 1.5px solid #ccc;
-      background: #fff;
+      background: var(--surface);
       color: #333;
       font-weight: 600;
       font-size: 0.95rem;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s var(--ease-out);
       font-family: var(--body-font);
     }
     .tier-btn:hover {
@@ -205,10 +206,9 @@
       color: var(--accent);
     }
     .tier-btn.active {
-      background: linear-gradient(90deg, var(--accent-2) 0%, var(--accent) 100%);
-      color: #fff;
-      /* border-color: transparent; */
-      box-shadow: 0 2px 8px rgba(124,58,237,0.25);
+      background: var(--accent);
+      color: var(--surface);
+      border-color: var(--accent);
     }
     .tier-desc {
       text-align: center;
@@ -233,7 +233,7 @@
       width: 100%;
       border-radius: 6px;
       border: 1px solid #ccc;
-      background: #000;
+      background: var(--ink);
     }
     .compare-label {
       font-weight: 700;
@@ -255,10 +255,10 @@
       border-collapse: collapse;
       width: 100%;
       font-size: 0.95rem;
-      background: #fff;
+      background: var(--surface);
       border-radius: 6px;
       overflow: hidden;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+      border: 1px solid var(--hairline);
     }
     table.results th, table.results td {
       padding: 0.55rem 0.85rem;
@@ -288,7 +288,7 @@
 
     /* Pipeline / method visualization */
     .method-fig {
-      background: #fff;
+      background: var(--surface);
       border: 1px solid #e5e5e5;
       border-radius: 8px;
       padding: 1.5rem;
@@ -319,19 +319,19 @@
       padding: 0.5rem 1rem;
       border-radius: 999px;
       border: 1.5px solid #ccc;
-      background: #fff;
+      background: var(--surface);
       color: #333;
       font-weight: 600;
       font-size: 0.92rem;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s var(--ease-out);
       font-family: var(--body-font);
     }
     .inspector-tab:hover { border-color: var(--accent); color: var(--accent); }
     .inspector-tab.active {
-      background: linear-gradient(90deg, var(--accent-2) 0%, var(--accent) 100%);
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(124,58,237,0.25);
+      background: var(--accent);
+      color: var(--surface);
+      border-color: var(--accent);
     }
     .inspector-blurb {
       color: var(--muted);
@@ -342,11 +342,10 @@
       display: flex;
       flex-direction: column;
       gap: 0.6rem;
-      background: #fff;
+      background: var(--surface);
       border: 1px solid #e5e5e5;
       border-radius: 8px;
       padding: 1rem 1.1rem;
-      box-shadow: 0 0 8px rgba(0,0,0,0.04);
     }
     .inspector-video-row {
       display: flex;
@@ -359,7 +358,7 @@
       max-width: 100%;
       border-radius: 6px;
       border: 1px solid #ccc;
-      background: #000;
+      background: var(--ink);
       cursor: pointer;
     }
     .inspector-readout {
@@ -445,7 +444,7 @@
 
     /* Iframe placeholder */
     .iframe-placeholder {
-      background: linear-gradient(135deg, #f0eee9 0%, #ece9e2 100%);
+      background: #f0eee9;
       border: 2px dashed #c7c3b8;
       border-radius: 8px;
       padding: 4rem 2rem;
@@ -588,30 +587,34 @@
         between the three demonstration tiers from the paper.
       </p>
 
+      <p style="text-align: center; font-weight: 600; margin: 0.4rem 0 1.2rem;">
+        Every rollout below runs at <span style="color: var(--accent);">1&times; speed, fully autonomous</span>. No teleoperation, no time-lapse, no edits.
+      </p>
+
       <div class="tier-selector" id="tier-selector">
-        <button class="tier-btn" data-tier="60">D<sub>1</sub> &mdash; demos &le; 60s (cleanest)</button>
-        <button class="tier-btn active" data-tier="90">D<sub>2</sub> &mdash; demos &le; 90s</button>
+        <button class="tier-btn active" data-tier="60">D<sub>1</sub> &mdash; demos &le; 60s (cleanest)</button>
+        <button class="tier-btn" data-tier="90">D<sub>2</sub> &mdash; demos &le; 90s</button>
         <button class="tier-btn" data-tier="120">D<sub>3</sub> &mdash; demos &le; 120s (noisiest)</button>
       </div>
 
       <div class="tier-desc" id="tier-desc">
-        D<sub>2</sub>: demonstrations &le; 90s &mdash; introduces more hesitations and recoveries. Vanilla BC collapses; WARP-BC stays robust.
+        D<sub>1</sub>: training corpus filtered to demonstrations &le; 60s &mdash; the cleanest, fastest demonstrations.
       </div>
 
       <div class="compare-row">
         <div class="compare-cell">
           <video id="vanilla-video" autoplay muted loop playsinline>
-            <source src="media/grid_under90s_vanilla_bc.mp4" type="video/mp4">
+            <source src="media/grid_under60s_vanilla_bc.mp4" type="video/mp4">
           </video>
           <div class="compare-label vanilla">Vanilla BC</div>
-          <div class="compare-metric" id="vanilla-metric">2/20 successes &middot; 199.0s mean TTC</div>
+          <div class="compare-metric" id="vanilla-metric">20/20 successes &middot; 113.8s mean TTC</div>
         </div>
         <div class="compare-cell">
           <video id="warp-video" autoplay muted loop playsinline>
-            <source src="media/grid_under90s_warp_bc.mp4" type="video/mp4">
+            <source src="media/grid_under60s_warp_bc.mp4" type="video/mp4">
           </video>
           <div class="compare-label warp">WARP-BC (Ours)</div>
-          <div class="compare-metric" id="warp-metric">19/20 successes &middot; 118.8s mean TTC</div>
+          <div class="compare-metric" id="warp-metric">20/20 successes &middot; 63.9s mean TTC</div>
         </div>
       </div>
 
@@ -666,7 +669,7 @@
         <figure style="margin: 0.5rem 0 0 0; text-align: center;">
           <img src="media/warp_rm_architecture.png"
                alt="WARP-RM architecture: frozen DINOv3 + temporal-diff + transformer + 30-bin categorical head"
-               style="width: 100%; max-width: 1000px; border-radius: 4px; box-shadow: 0 0 8px rgba(0,0,0,0.06);">
+               style="width: 100%; max-width: 1000px; border-radius: 6px; border: 1px solid var(--hairline); background: var(--surface); padding: 1.5rem;">
           <figcaption class="method-fig-caption" style="margin-top: 0.6rem; text-align: left;">
             <b>WARP Reward Model.</b> A window of \(N{=}32\) RGB frames is encoded by frozen DINOv3,
             augmented with per-frame temporal differences, projected to model dimension, and processed
@@ -1052,7 +1055,7 @@
           const line = document.createElementNS(ns, 'line');
           line.setAttribute('x1', PAD.l); line.setAttribute('x2', plotWidth - PAD.r);
           line.setAttribute('y1', y); line.setAttribute('y2', y);
-          line.setAttribute('stroke', v === 0 ? '#000' : '#ccc');
+          line.setAttribute('stroke', v === 0 ? '#17181c' : '#ccc');
           line.setAttribute('stroke-width', v === 0 ? 0.9 : 0.5);
           if (v !== 0) line.setAttribute('stroke-dasharray', '2 3');
           svg.appendChild(line);
@@ -1169,7 +1172,7 @@
         sg.appendChild(sl);
         const sd = document.createElementNS(ns, 'circle');
         sd.setAttribute('r', 5);
-        sd.setAttribute('stroke', '#000'); sd.setAttribute('stroke-width', 1.2);
+        sd.setAttribute('stroke', '#17181c'); sd.setAttribute('stroke-width', 1.2);
         sg.appendChild(sd);
         svg.appendChild(sg);
         scrubberEl = sg;
