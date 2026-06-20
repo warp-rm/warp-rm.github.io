@@ -832,8 +832,8 @@
       <h2 style="margin-top: 2rem;">Matched baseline comparisons</h2>
       <p style="color: var(--muted);">
         Because SARM requires human-annotated subtask boundaries, all methods are evaluated on
-        the augmented corpora \(\mathcal{D}_{4} = \mathcal{D}_{1} \cup A\) and
-        \(\mathcal{D}_{5} = \mathcal{D}_{2} \cup A\), where \(A\) is the annotated supplement (treated as
+        the augmented corpora \(\mathcal{D}_{4} = \mathcal{D}_{1} \cup \mathcal{D}_{A}\) and
+        \(\mathcal{D}_{5} = \mathcal{D}_{2} \cup \mathcal{D}_{A}\), where \(\mathcal{D}_{A}\) is the annotated supplement (treated as
         unannotated by every method except SARM). WARP-BC sustains the highest throughput on both
         tiers and ties or leads on success &mdash; without the human labels SARM needs. SARM and
         SCIZOR collapse on the noisier \(\mathcal{D}_{5}\), while DemInf stays robust on success but at
@@ -959,15 +959,15 @@
           <tbody>
             <tr><td colspan="5" style="background:#f7f5ef; text-align:left; font-weight:700; padding-left:1rem;">Weighting function</td></tr>
             <tr>
-              <td class="method">&tau; = 0</td>
+              <td class="method">\(\tau = 0\)</td>
               <td>3/20</td><td>201.4</td><td>2.3</td><td>97.0%</td>
             </tr>
             <tr>
-              <td class="method">&tau; = 1, max = 1 (binary)</td>
+              <td class="method">\(\tau = 1\), max = 1 (binary)</td>
               <td>16/20</td><td>139.6</td><td>18.0</td><td>34.4%</td>
             </tr>
             <tr class="highlight">
-              <td class="method">&tau; = 1, continuous &mdash; <b>WARP</b></td>
+              <td class="method">\(\tau = 1\), continuous &mdash; <b>WARP</b></td>
               <td class="best">19/20</td><td class="best">118.8</td><td class="best">27.4</td><td>34.4%</td>
             </tr>
             <tr><td colspan="5" style="background:#f7f5ef; text-align:left; font-weight:700; padding-left:1rem;">RA-BC aggregation strategy</td></tr>
