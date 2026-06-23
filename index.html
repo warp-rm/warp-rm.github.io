@@ -564,7 +564,7 @@
 <body>
   <nav class="sidebar">
     <ul>
-      <li><a href="#teaser">Overview</a></li>
+      <li><a href="#overview">Overview</a></li>
       <li><a href="#data">Data</a></li>
       <li><a href="#results">Real-World Results</a></li>
       <li><a href="#bottle-results">Bottle Task</a></li>
@@ -606,13 +606,30 @@
           </div>
         </div>
       </div>
-      <div class="tldr">
-        <b>TL;DR:</b> WARP learns a self-supervised, dense, signed
-        <span style="color: var(--accent); font-weight: 700;">relative</span>
-        progress signal from raw demonstrations by training on time-warped playback.
-        Reweighted behavior cloning with WARP-RM produces policies that fold T-shirts up to
-        <b style="color: var(--accent);">18&times; faster</b> in throughput compared to vanilla BC trained on the same data.
-      </div>
+    </section>
+
+    <section id="overview">
+      <p style="font-size: 1.18rem; color: #1a1a1a; line-height: 1.65;">
+        Robots learn manipulation by imitating human teleoperators &mdash; but people are messy. A single
+        demonstration is full of hesitations, fumbles, and recoveries, and plain behavior cloning copies all of
+        it, growing slower and less reliable as the training data gets noisier. The usual fix &mdash;
+        hand-labeling which moments show real progress &mdash; is slow, subjective, and hard to scale.
+      </p>
+      <p>
+        <b>WARP-RM asks a different question: can a robot learn to recognize task progress on its own, with no
+        labels at all?</b> The idea is a self-supervised trick &mdash; replay successful demonstrations at
+        invented speeds (fast-forward, slow-motion, even in reverse) and train a model to recover <i>how fast,
+        and in which direction</i>, the task is advancing. Every unlabeled demonstration becomes free
+        supervision, producing a dense, per-frame progress signal \(\hat{v}_t\). We then
+        <b>reweight behavior cloning</b> by \(\hat{v}_t\), so policies learn from decisive, efficient motion
+        and discount wasted effort.
+      </p>
+      <p>
+        The result: policies that finish far faster and stay robust even when trained on the messiest data
+        &mdash; up to <b style="color: var(--accent);">~18&times; higher folding throughput</b> than standard
+        behavior cloning &mdash; and the same recipe transfers to another manipulation task unchanged.
+        Scrub the prediction below to watch the learned progress signal track a real episode.
+      </p>
     </section>
 
     <section id="inspector">
@@ -653,19 +670,19 @@
     <section id="data">
       <h1>Data</h1>
       <p style="color: var(--muted);">
-        Our policy-training data is drawn from a single corpus of around 125 hours of successful,
+        Our policy-training data is drawn from a single corpus of around 140 hours of successful,
         unannotated human-teleoperated T-shirt-folding demonstrations. On this task, <b>episode length is a coarse proxy
         for execution efficiency</b>: longer episodes tend to contain more hesitations, retries, and
         recoveries. To evaluate robustness as progressively more inefficient behavior is admitted into
         training, we define <b>three nested, length-filtered tiers</b>: \(\mathcal{D}_{1}\) (&le;&nbsp;60s):
-        1,975 episodes (29.1&nbsp;hours), \(\mathcal{D}_{2}\) (&le;&nbsp;90s): 3,546 episodes
-        (61.5&nbsp;hours), and \(\mathcal{D}_{3}\) (&le;&nbsp;120s): 5,718 episodes (124.7&nbsp;hours).
+        2,427 episodes (36.1&nbsp;hours), \(\mathcal{D}_{2}\) (&le;&nbsp;90s): 4,124 episodes
+        (71.3&nbsp;hours), and \(\mathcal{D}_{3}\) (&le;&nbsp;120s): 6,473 episodes (139.7&nbsp;hours).
         Policies are trained on the same underlying demonstrations, either with uniform weighting
         (vanilla BC) or WARP-based progress reweighting. A single WARP-RM model is used across all tiers:
         it is trained <b>once</b> on a fixed reference subset \(\mathcal{D}_{\mathrm{RM}}\) &mdash; the
-        shortest demonstrations (&le;&nbsp;59s, 1,807 episodes) &mdash; providing a clean reference signal
+        shortest demonstrations (&le;&nbsp;59.8s, 1,950 episodes) &mdash; providing a clean reference signal
         for the canonical execution pace (\(\hat{v} = 1\)). For baseline comparisons, SARM requires human
-        annotations, so an <b>annotated supplement</b> \(\mathcal{D}_{A}\) (929 expert demonstrations, 15.8 hours) is
+        annotations, so an <b>annotated supplement</b> \(\mathcal{D}_{A}\) (867 expert demonstrations, 13.9 hours) is
         added, forming the augmented datasets \(\mathcal{D}_{4} = \mathcal{D}_{1} \cup \mathcal{D}_{A}\)
         and \(\mathcal{D}_{5} = \mathcal{D}_{2} \cup \mathcal{D}_{A}\); WARP-RM and all other baselines treat \(\mathcal{D}_{A}\)
         as unannotated.
@@ -745,7 +762,7 @@
     </section>
 
     <section id="bottle-results">
-      <h1>Second Task: Bottle-in-Bin Placement</h1>
+      <h1>Another Task: Bottle-in-Bin Placement</h1>
       <p style="color: var(--muted);">
         To test generality beyond folding, we apply the same recipe &mdash; WARP-RM progress estimates
         reweighting behavior cloning &mdash; to a <b>bottle-in-bin placement</b> task on the same
