@@ -663,30 +663,41 @@
 
     <section id="tldr">
       <div class="tldr">
-        <b>TL;DR.</b> WARP-RM is a fully self-supervised model that learns a dense, signed,
+        <b>TL;DR.</b> WARP-RM is a self-supervised model that learns a dense, signed,
         <span style="color: var(--accent); font-weight: 700;">relative</span> progress signal from raw
-        demonstrations, trained on temporally-warped playback. We use these scalar reward estimates to filter and re-weight action chunks during behavior cloning.</span>
+        demonstrations by training on temporally-warped playback. Reweighting action chunks for behavior
+        cloning using WARP-RM leads to better policies.
       </div>
     </section>
 
     <section id="overview">
-      <h1>More data, better policies?</h1>
+      <h1>Which Data is Worth Imitating?</h1>
       <p>
-        Imitation learning is supposed to improve with more demonstrations. That only holds in practice if the
-        data is high quality, and human teleoperation is rarely entirely clean. Collect data at scale and hesitations,
-        missed grasps, and clumsy behaviors accumulate next to the smooth executions; a policy trained on all
-        of it imitates the pauses and fumbles.
+        On long-horizon tasks, collecting high-quality data becomes increasingly difficult. Even skilled
+        humans make mistakes on challenging tasks, leaving low-quality segments scattered through
+        otherwise-good demonstrations. This pushes roboticists toward <b>data curation</b>: deciding which
+        data is actually worth imitating.
       </p>
       <p>
-        Discarding every flawed episode is the obvious response, but it fails in both directions: it drops the
-        good, decisive segments sitting inside otherwise-messy episodes, and it leaves stalls in the episodes you keep. Episodes that end in successes but contain mistakes are also where useful
-        recovery behavior lives.
+        Many approaches curate at the trajectory level, discarding any demonstration that shows
+        mistakes or backward progress. On longer tasks this wastes large amounts of data, and it throws away
+        the <b>recovery segments</b> that teach a policy how to get back on track after a slip.
       </p>
       <p>
-        One idea is to estimate progress inside a demonstration, and train only on the segments
-        that move the task forward. Training models to estimate progress cleanly and effectively comes down to the choice of supervision signal. Most prior frame-level reward models
-        equate progress with elapsed time, or how far you are into the demonstration. We conjecture that supervising on elapsed time injects noise into task progress estimation models: two clips at the same
-        point on the clock can be in different states. An alternative is to hand-annotate subtask boundaries or forward progress, stagnation and regression as in <a href="https://arxiv.org/abs/2509.25358" target="_blank" rel="noopener" style="color: var(--accent);">SARM</a> and <a href="https://arxiv.org/abs/2604.03037" target="_blank" rel="noopener" style="color: var(--accent);">ARM</a>, and is less noisy but human annotations are costly to scale and are potentially inconsistent.
+        A finer approach estimates progress <i>inside</i> a demonstration and keeps or down-weights individual
+        action chunks by how much they advance the task.
+        <a href="https://arxiv.org/abs/2509.25358" target="_blank" rel="noopener" style="color: var(--accent);">SARM</a>
+        and <a href="https://arxiv.org/abs/2604.03037" target="_blank" rel="noopener" style="color: var(--accent);">ARM</a>
+        learn this from human-annotated labels on long-horizon T-shirt folding, while
+        <a href="https://arxiv.org/abs/2505.22626" target="_blank" rel="noopener" style="color: var(--accent);">SCIZOR</a>
+        uses a self-supervised signal, but on shorter-horizon tasks.
+      </p>
+      <p>
+        A common self-supervised signal in progress reward modeling is the <b>fraction of the trajectory completed so far</b>, the
+        normalized timestep \(t/T\)<sup style="margin-left: 0.12em;"><a href="#fn-time" style="color: var(--accent); text-decoration: none;">1</a></sup>.
+        But elapsed time and task progress are not the same: scoring by the clock pins one label on genuinely
+        different states, and the mismatch only grows on long-horizon tasks, where pauses and retries pull the
+        clock further out of step with the task, as the frames below show:
       </p>
 
       <div class="noise-row">
@@ -1277,6 +1288,19 @@
         unclear how well WARP-RM reads progress on tasks without that kind of visual structure.
       </p>
     </section> -->
+
+    <section id="notes" style="margin-top: 2.5rem;">
+      <hr style="border: none; border-top: 1px solid var(--hairline); margin-bottom: 1rem;">
+      <ol style="color: var(--muted); font-size: 0.9rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
+        <li id="fn-time">
+          Progress reward models that supervise on this signal include
+          <a href="https://arxiv.org/abs/2603.02115" target="_blank" rel="noopener" style="color: var(--accent);">Robometer</a>,
+          <a href="https://arxiv.org/abs/2505.10911" target="_blank" rel="noopener" style="color: var(--accent);">ReWiND</a>, and
+          <a href="https://arxiv.org/abs/2603.27670" target="_blank" rel="noopener" style="color: var(--accent);">ProgressVLA</a>
+          &mdash; each regresses the normalized timestep \(t/T\) (or frame index \(i/N\)) as the per-frame progress target.
+        </li>
+      </ol>
+    </section>
 
   </main>
 
