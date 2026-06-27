@@ -674,29 +674,27 @@
       <h1>Which Data is Worth Imitating?</h1>
       <p>
         On long-horizon tasks, collecting high-quality data becomes increasingly difficult. Even skilled
-        humans make mistakes on challenging tasks, leaving low-quality segments scattered through
-        otherwise-good demonstrations. This pushes roboticists toward <b>data curation</b>: deciding which
+        humans make mistakes on challenging tasks, leaving low-quality segments scattered throughout
+        otherwise-successful demonstrations. This pushes roboticists toward <b>data curation</b>: deciding which
         data is actually worth imitating.
       </p>
       <p>
         Many approaches curate at the trajectory level, discarding any demonstration that shows
-        mistakes or backward progress. On longer tasks this wastes large amounts of data, and it throws away
-        the <b>recovery segments</b> that teach a policy how to get back on track after a slip.
+        mistakes or progress stagnation and regression. On longer tasks this strategy wastes large amounts of data, and it throws away
+        the <b>recovery segments</b> that crucially teach a policy how to get back on track after a mistake.
       </p>
       <p>
-        A finer approach estimates progress <i>inside</i> a demonstration and keeps or down-weights individual
+        Many finer-grained approaches estimate progress <i>inside</i> a demonstration and filters or re-weights individual
         action chunks by how much they advance the task.
         <a href="https://arxiv.org/abs/2509.25358" target="_blank" rel="noopener" style="color: var(--accent);">SARM</a>
         and <a href="https://arxiv.org/abs/2604.03037" target="_blank" rel="noopener" style="color: var(--accent);">ARM</a>
-        learn this from human-annotated labels on long-horizon T-shirt folding, while
-        <a href="https://arxiv.org/abs/2505.22626" target="_blank" rel="noopener" style="color: var(--accent);">SCIZOR</a>
-        uses a self-supervised signal, but on shorter-horizon tasks.
+        learn this from human-annotated labels on long-horizon T-shirt folding.
       </p>
       <p>
         A common self-supervised signal in progress reward modeling is the <b>fraction of the trajectory completed so far</b>, the
         normalized timestep \(t/T\)<sup style="margin-left: 0.12em;"><a href="#fn-time" style="color: var(--accent); text-decoration: none;">1</a></sup>.
-        But elapsed time and task progress are not the same: scoring by the clock pins one label on genuinely
-        different states, and the mismatch only grows on long-horizon tasks, where pauses and retries pull the
+        But elapsed time and task progress are not the same: scoring by the clock supervises one label on
+        different states, and the disagreement grows on long-horizon tasks, where pauses and retries pull the
         clock further out of step with the task, as the frames below show:
       </p>
 
@@ -750,7 +748,7 @@
 
       <p class="inspector-caption-text">
         Episodes A and B play real teleoperated episodes while the curve shows the dense per-frame
-        predicted signed progress magnitude \(\hat{v}_{t}\) &mdash;
+        predicted signed progress magnitude \(\hat{v}_{t}\):
         <span style="color: #059669; font-weight: 600;">positive</span> for forward task progress and
         <span style="color: #cc3333; font-weight: 600;">negative</span> for regression.
         <b>Click on the curve to scrub through the video.</b>
@@ -852,8 +850,8 @@
         (71.3&nbsp;hours), and \(\mathcal{D}_{3}\) (&le;&nbsp;120s): 6,473 episodes (139.7&nbsp;hours).
         Policies are trained on the same underlying demonstrations, either with uniform weighting
         (vanilla BC) or WARP-based progress reweighting. A single WARP-RM model is used across all tiers:
-        it is trained <b>once</b> on a fixed reference subset \(\mathcal{D}_{\mathrm{RM}}\) &mdash; the
-        shortest demonstrations (&le;&nbsp;59.8s, 1,950 episodes) &mdash; providing a clean reference signal
+        it is trained <b>once</b> on a fixed reference subset \(\mathcal{D}_{\mathrm{RM}}\), the
+        shortest demonstrations (&le;&nbsp;59.8s, 1,950 episodes), providing a clean reference signal
         for the canonical execution pace (\(\hat{v} = 1\)). For baseline comparisons, SARM requires human
         annotations, so an <b>annotated supplement</b> \(\mathcal{D}_{A}\) (867 expert demonstrations, 13.9 hours) is
         added, forming the augmented datasets \(\mathcal{D}_{4} = \mathcal{D}_{1} \cup \mathcal{D}_{A}\)
@@ -1296,8 +1294,8 @@
           Progress reward models that supervise on this signal include
           <a href="https://arxiv.org/abs/2603.02115" target="_blank" rel="noopener" style="color: var(--accent);">Robometer</a>,
           <a href="https://arxiv.org/abs/2505.10911" target="_blank" rel="noopener" style="color: var(--accent);">ReWiND</a>, and
-          <a href="https://arxiv.org/abs/2603.27670" target="_blank" rel="noopener" style="color: var(--accent);">ProgressVLA</a>
-          &mdash; each regresses the normalized timestep \(t/T\) (or frame index \(i/N\)) as the per-frame progress target.
+          <a href="https://arxiv.org/abs/2603.27670" target="_blank" rel="noopener" style="color: var(--accent);">ProgressVLA</a>.
+          Each regresses the normalized timestep \(t/T\) (or frame index \(i/N\)) as its per-frame progress target.
         </li>
       </ol>
     </section>
